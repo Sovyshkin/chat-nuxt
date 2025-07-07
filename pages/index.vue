@@ -319,7 +319,7 @@ watch(
                 @click="scrollToRepliedMessage(message.replyTo._id)"
               >
                 <div class="reply-info">
-                  <span class="reply-label">Ответ на:</span>
+                  <span class="reply-label">The answer to:</span>
                   <span class="reply-sender">
                     {{ message.replyTo.senderName }}
                   </span>
@@ -461,7 +461,7 @@ watch(
                 alt="Ответить"
                 class="context-menu-icon"
               />
-              <span>Ответить</span>
+              <span>To answer</span>
             </div>
             <div
               class="context-menu-item"
@@ -472,7 +472,7 @@ watch(
                 alt="Копировать"
                 class="context-menu-icon"
               />
-              <span>Копировать</span>
+              <span>Copy</span>
             </div>
             <div
               class="context-menu-item danger"
@@ -484,7 +484,7 @@ watch(
                 alt="Удалить"
                 class="context-menu-icon"
               />
-              <span>Удалить</span>
+              <span>Delete</span>
             </div>
           </div>
         </div>
@@ -517,7 +517,7 @@ watch(
           <transition name="slide-down">
             <div class="reply-preview" v-if="chatStore.replyId">
               <div class="reply-info">
-                <span>Ответ на сообщение:</span>
+                <span>Reply to the message:</span>
                 <button @click="cancelReply" class="cancel-reply">×</button>
               </div>
               <div class="reply-text">
@@ -542,7 +542,7 @@ watch(
               class="group-item"
               v-model="chatStore.content"
               @keydown.enter="handleEnter"
-              placeholder="начни писать..."
+              placeholder="Start writing..."
             />
             <img
               class="send"

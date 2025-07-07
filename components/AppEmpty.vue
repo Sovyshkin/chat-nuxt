@@ -1,5 +1,5 @@
 <template>
-    <div class="empty">Ничего нет..</div>
+    <div class="empty">There is nothing..</div>
   </template>
   <style scoped>
   .empty {

@@ -46,7 +46,7 @@ const goCreateGroup = async () => {
   <div class="wrapper">
     <header class="header-chats">
       <div class="emp"></div>
-      <h1>Чаты</h1>
+      <h1>Chats</h1>
       <img
         class="img-create-group"
         src="../assets/create-group.png"
@@ -82,19 +82,19 @@ const goCreateGroup = async () => {
     <!-- Модальное окно создания группы -->
     <Modal v-if="showCreateGroupModal" @close="showCreateGroupModal = false">
       <div class="create-group-modal">
-        <h2>Новая группа</h2>
+        <h2>A new group</h2>
 
         <div class="form-group">
           <input
             type="text"
             v-model="newGroupName"
-            placeholder="Название группы"
+            placeholder="Group name"
             class="group-name-input"
           />
         </div>
         <AppLoader v-if="chatStore.isLoading" />
         <div class="users-list" v-else>
-          <h3>Выберите участников:</h3>
+          <h3>Select the participants:</h3>
           <div
             class="user-item"
             v-for="user in chatStore.users"
@@ -115,7 +115,7 @@ const goCreateGroup = async () => {
           @click="createGroup"
           :disabled="!newGroupName.trim() || selectedUsers.length === 0"
         >
-          Создать группу
+        Create a group
         </button>
       </div>
     </Modal>
