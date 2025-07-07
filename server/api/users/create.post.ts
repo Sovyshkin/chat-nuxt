@@ -13,14 +13,12 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Ищем пользователя или создаем нового
     let user = await User.findOne({ userId });
 
     if (!user) {
       user = new User({ name, userId, avatar });
       await user.save();
     } else {
-      // Если пользователь уже существует, можно обновить его данные (опционально)
       user.name = name;
       user.avatar = avatar;
       await user.save();

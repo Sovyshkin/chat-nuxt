@@ -19,5 +19,15 @@ export default defineNuxtConfig({
         }
       }
     }
-  }
+  },
+  vite: {
+    server: {
+      host: '0.0.0.0', // Опционально: сервер слушает все интерфейсы
+      allowedHosts: [
+        'saluence.net',       // Основной домен
+        'www.saluence.net',    // Поддомен www
+        'localhost',           // Для локальной разработки
+      ],
+    },
+  },
 })
