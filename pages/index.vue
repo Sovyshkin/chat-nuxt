@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, nextTick, onMounted, computed, onUnmounted} from "vue";
+import { ref, watch, nextTick, onMounted, computed, onUnmounted } from "vue";
 import AppLoader from "@/components/AppLoader.vue";
 import ChatLoader from "@/components/ChatLoader.vue";
 import AppEmpty from "@/components/AppEmpty.vue";
@@ -12,10 +12,7 @@ const contextMenuHeight = 120;
 const iframeData = ref({});
 
 const handleMessage = (event) => {
-  const ALLOWED_ORIGINS = [
-    "https://saluence.net",
-    "http://localhost:3000"
-  ];
+  const ALLOWED_ORIGINS = ["https://saluence.net", "http://localhost:3000"];
 
   console.log("IFRAME", event.origin);
   console.log(event);
@@ -77,13 +74,11 @@ const copyMessage = (message) => {
   contextMenuVisible.value = false;
 };
 
-
 const replyToMessage = (message) => {
   chatStore.replyId = message._id;
   contextMenuVisible.value = false;
   document.querySelector(".group-item")?.focus();
 };
-
 
 const deleteMessage = async (message) => {
   if (confirm("Вы уверены, что хотите удалить это сообщение?")) {
@@ -162,7 +157,7 @@ const handleFileSelect = (event) => {
   }
 
   chatStore.files = [...chatStore.files, ...validFiles];
-  event.target.value = ""; 
+  event.target.value = "";
 };
 
 const removeFile = (index) => {
@@ -232,7 +227,10 @@ const auth = async () => {
 };
 
 onMounted(async () => {
-  window.addEventListener("message", handleMessage);
+  let params = location.href.split("?")[1].split("&");
+  for (x in params) {
+    iframeData.value[params[x].split("=")[0]] = params[x].split("=")[1];
+  }
   document.addEventListener("click", hideContextMenu);
   nextTick(() => {
     scrollToBottom();
