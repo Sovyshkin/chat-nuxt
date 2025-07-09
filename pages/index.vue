@@ -256,7 +256,7 @@ watch(
 
 <template>
   <div class="wrapper">
-    {{ data }}
+    {{ iframeData }}
     <div
       class="menu mobile"
       v-if="!chatStore.showChats"
