@@ -214,23 +214,29 @@ const closeFullscreenImage = () => {
   document.body.style.overflow = "";
 };
 
-const auth = async () => {
+const getDataIframe = async () => {
   try {
-    window.addEventListener("message", (event) => {
-      event.source.postMessage({ status: "success" }, event.origin);
-      data = event.data;
-      if (event.origin !== "http://localhost:3000") return;
-
-      console.log("Получены данные:", data);
-    });
-  } catch (err) {}
+    let params = location.href.split("?")[1].split("&");
+    for (let x in params) {
+      iframeData.value[params[x].split("=")[0]] = params[x].split("=")[1];
+    }
+    let response = await $fetch("/api/users/create", {
+      method: "POST",
+      body: {
+        ...iframeData.value
+      }
+    })
+    chatStore.user = response
+  } catch (err) {
+    console.log(err);
+    if (err.message) {
+      alert(err.message)
+    }
+  }
 };
 
 onMounted(async () => {
-  let params = location.href.split("?")[1].split("&");
-  for (x in params) {
-    iframeData.value[params[x].split("=")[0]] = params[x].split("=")[1];
-  }
+  await getDataIframe();
   document.addEventListener("click", hideContextMenu);
   nextTick(() => {
     scrollToBottom();
@@ -257,7 +263,6 @@ watch(
 
 <template>
   <div class="wrapper">
-    {{ iframeData }}
     <div
       class="menu mobile"
       v-if="!chatStore.showChats"
