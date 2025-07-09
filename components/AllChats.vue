@@ -64,7 +64,7 @@ const goCreateGroup = async () => {
         :class="{ selected: chatStore.selectedChat._id === item._id }"
       >
         <div class="info">
-          <img src="../assets/gpt.svg" alt="" />
+          <img :src="item.avatar" alt="" />
           <span class="name">{{ item.name }}</span>
         </div>
         <div

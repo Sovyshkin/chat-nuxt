@@ -9,6 +9,7 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedMessage = ref(null);
 const contextMenuWidth = 160; // Ширина контекстного меню
 const contextMenuHeight = 120; // Примерная высота контекстного меню
+let data = {}
 
 // Функция для показа контекстного меню
 const showContextMenu = (event, message) => {
@@ -228,13 +229,12 @@ const closeFullscreenImage = () => {
 
 const auth = async () => {
   try {
-    window.addEventListener('message', (event) => {
+    window.addEventListener('message', (event) => {;
     // Проверяем origin отправителя для безопасности
-    if (event.origin !== 'https://родительский-сайт.com') return;
+    if (event.origin !== 'http://localhost:3000') return;
 
-    // Получаем данные
-    const data = event.data;
-    console.log('Получены данные:', data);
+    data = event.data;
+    console.log('Получены данные:', data)
 });
   } catch (err) {
     
@@ -266,6 +266,7 @@ watch(
 
 <template>
   <div class="wrapper">
+    {{data}}
     <div
       class="menu mobile"
       v-if="!chatStore.showChats"
