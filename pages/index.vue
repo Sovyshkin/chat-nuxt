@@ -9,7 +9,7 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedMessage = ref(null);
 const contextMenuWidth = 160; // Ширина контекстного меню
 const contextMenuHeight = 120; // Примерная высота контекстного меню
-let data = {}
+let data = {};
 
 // Функция для показа контекстного меню
 const showContextMenu = (event, message) => {
@@ -98,7 +98,6 @@ const getRepliedMessageText = (replyId) => {
 
 const chatStore = useChatStore();
 chatStore.connect();
-
 
 const messagesContainer = ref(null); // Создаем ref для контейнера сообщений
 // const toast = useToast()
@@ -229,21 +228,19 @@ const closeFullscreenImage = () => {
 
 const auth = async () => {
   try {
-    window.addEventListener('message', (event) => {;
-    // Проверяем origin отправителя для безопасности
-    if (event.origin !== 'http://localhost:3000') return;
+    window.addEventListener("message", (event) => {
+      event.source.postMessage({ status: "success" }, event.origin);
+      // Проверяем origin отправителя для безопасности
+      if (event.origin !== "http://localhost:3000") return;
 
-    data = event.data;
-    console.log('Получены данные:', data)
-    event.source.postMessage({ status: 'success' }, event.origin);
-});
-  } catch (err) {
-    
-  }
-}
+      data = event.data;
+      console.log("Получены данные:", data);
+    });
+  } catch (err) {}
+};
 
 onMounted(async () => {
-  await auth()
+  await auth();
   nextTick(() => {
     scrollToBottom();
     // Добавляем дополнительную проверку через setTimeout
@@ -267,7 +264,7 @@ watch(
 
 <template>
   <div class="wrapper">
-    {{data}}
+    {{ data }}
     <div
       class="menu mobile"
       v-if="!chatStore.showChats"
@@ -275,7 +272,7 @@ watch(
     >
       <img class="menu-img" src="../assets/menu.png" alt="" />
     </div>
-    <AllChats class="desk"/>
+    <AllChats class="desk" />
     <transition name="fadeChats" class="mobile">
       <AllChats v-if="chatStore.showChats" />
     </transition>
