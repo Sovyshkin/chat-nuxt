@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, nextTick, onMounted, computed } from "vue";
+import { ref, watch, nextTick, onMounted, computed, onUnmounted} from "vue";
 import AppLoader from "@/components/AppLoader.vue";
 import ChatLoader from "@/components/ChatLoader.vue";
 import AppEmpty from "@/components/AppEmpty.vue";
@@ -7,57 +7,65 @@ import AppEmpty from "@/components/AppEmpty.vue";
 const contextMenuVisible = ref(false);
 const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedMessage = ref(null);
-const contextMenuWidth = 160; // Ширина контекстного меню
-const contextMenuHeight = 120; // Примерная высота контекстного меню
-let data = {};
+const contextMenuWidth = 160;
+const contextMenuHeight = 120;
+const iframeData = ref(null);
 
-// Функция для показа контекстного меню
+const handleMessage = (event) => {
+  const ALLOWED_ORIGINS = [
+    "https://saluence.net",
+    "http://localhost:3000"
+  ];
+
+  if (!ALLOWED_ORIGINS.includes(event.origin)) {
+    return;
+  }
+
+  if (event.data && event.data.type === "iframe_message") {
+    iframeData.value = event.data.payload;
+
+    if (event.source) {
+      event.source.postMessage(
+        { type: "response", status: "success" },
+        event.origin
+      );
+    }
+  }
+};
+
 const showContextMenu = (event, message) => {
   event.preventDefault();
   selectedMessage.value = message;
 
-  // Получаем размеры окна
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
-  // Рассчитываем позицию с учетом границ экрана
   let x = event.clientX;
   let y = event.clientY;
 
-  // Проверяем правую границу
   if (x + contextMenuWidth > windowWidth) {
-    x = windowWidth - contextMenuWidth - 10; // 10px отступ от края
+    x = windowWidth - contextMenuWidth - 10;
   }
 
-  // Проверяем нижнюю границу
   if (y + contextMenuHeight > windowHeight) {
-    y = windowHeight - contextMenuHeight - 10; // 10px отступ от края
+    y = windowHeight - contextMenuHeight - 10;
   }
 
   contextMenuPosition.value = { x, y };
   contextMenuVisible.value = true;
 };
-// Функция для скрытия меню
 const hideContextMenu = () => {
   contextMenuVisible.value = false;
 };
 
-// Добавляем обработчики после монтирования компонента
-onMounted(async () => {
-  document.addEventListener("click", hideContextMenu);
-});
-
-// Удаляем обработчики перед размонтированием
 onBeforeUnmount(() => {
   document.removeEventListener("click", hideContextMenu);
 });
 
-// Копирование текста сообщения
 const copyMessage = (message) => {
   navigator.clipboard
     .writeText(message.text)
     .then(() => {
-      // Можно добавить уведомление об успешном копировании
       console.log("Текст скопирован");
     })
     .catch((err) => {
@@ -66,15 +74,14 @@ const copyMessage = (message) => {
   contextMenuVisible.value = false;
 };
 
-// Ответ на сообщение
+
 const replyToMessage = (message) => {
   chatStore.replyId = message._id;
   contextMenuVisible.value = false;
-  // Можно добавить фокус на поле ввода
   document.querySelector(".group-item")?.focus();
 };
 
-// Удаление сообщения
+
 const deleteMessage = async (message) => {
   if (confirm("Вы уверены, что хотите удалить это сообщение?")) {
     try {
@@ -90,7 +97,6 @@ const cancelReply = () => {
   chatStore.replyId = null;
 };
 
-// Метод для получения текста сообщения, на которое отвечаем
 const getRepliedMessageText = (replyId) => {
   const repliedMessage = chatStore.messages.find((msg) => msg._id === replyId);
   return repliedMessage?.text || "Сообщение удалено";
@@ -99,8 +105,7 @@ const getRepliedMessageText = (replyId) => {
 const chatStore = useChatStore();
 chatStore.connect();
 
-const messagesContainer = ref(null); // Создаем ref для контейнера сообщений
-// const toast = useToast()
+const messagesContainer = ref(null);
 
 const handleEnter = (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -109,7 +114,6 @@ const handleEnter = (event) => {
   }
 };
 
-// Функция для прокрутки к последнему сообщению
 const scrollToBottom = () => {
   nextTick(() => {
     if (messagesContainer.value) {
@@ -138,19 +142,15 @@ const scrollToRepliedMessage = (replyToId) => {
   }
 };
 
-// Добавляем ref для хранения выбранных файлов
 const fileInput = ref(null);
 
-// Функция для открытия диалога выбора файлов
 const openFilePicker = () => {
   fileInput.value.click();
 };
 
-// Обработчик выбора файлов
 const handleFileSelect = (event) => {
   const selectedFiles = Array.from(event.target.files);
 
-  // Проверяем размер файлов (например, не более 10MB)
   const maxSize = 10 * 1024 * 1024; // 10MB
   const validFiles = selectedFiles.filter((file) => file.size <= maxSize);
 
@@ -159,15 +159,13 @@ const handleFileSelect = (event) => {
   }
 
   chatStore.files = [...chatStore.files, ...validFiles];
-  event.target.value = ""; // Сбрасываем input для возможности повторного выбора тех же файлов
+  event.target.value = ""; 
 };
 
-// Удаление файла из списка перед отправкой
 const removeFile = (index) => {
   chatStore.files.splice(index, 1);
 };
 
-// Определяем тип файла для отображения соответствующего значка
 const fileTypeIcon = computed(() => {
   return (file) => {
     if (file.type.startsWith("image/")) return "image";
@@ -177,7 +175,6 @@ const fileTypeIcon = computed(() => {
   };
 });
 
-// Добавляем computed для определения типа медиа
 const mediaType = (media) => {
   if (media.type === "image") return "image";
   if (media.type === "video") return "video";
@@ -186,7 +183,6 @@ const mediaType = (media) => {
   return "document";
 };
 
-// Функция для форматирования длительности
 const formatDuration = (seconds) => {
   if (!seconds) return "0:00";
   const mins = Math.floor(seconds / 60);
@@ -194,35 +190,29 @@ const formatDuration = (seconds) => {
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
-// Функция для форматирования размера файла
 const formatFileSize = (bytes) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-// Добавляем состояние для полноэкранного просмотра
 const fullscreenImage = ref({
   visible: false,
   url: "",
   caption: "",
 });
 
-// Функция для открытия изображения на весь экран
 const openFullscreenImage = (url, caption = "") => {
   fullscreenImage.value = {
     visible: true,
     url,
     caption,
   };
-  // Блокируем прокрутку фона
   document.body.style.overflow = "hidden";
 };
 
-// Функция для закрытия полноэкранного режима
 const closeFullscreenImage = () => {
   fullscreenImage.value.visible = false;
-  // Восстанавливаем прокрутку фона
   document.body.style.overflow = "";
 };
 
@@ -231,7 +221,6 @@ const auth = async () => {
     window.addEventListener("message", (event) => {
       event.source.postMessage({ status: "success" }, event.origin);
       data = event.data;
-      // Проверяем origin отправителя для безопасности
       if (event.origin !== "http://localhost:3000") return;
 
       console.log("Получены данные:", data);
@@ -240,12 +229,16 @@ const auth = async () => {
 };
 
 onMounted(async () => {
-  await auth();
+  window.addEventListener("message", handleMessage);
+  document.addEventListener("click", hideContextMenu);
   nextTick(() => {
     scrollToBottom();
-    // Добавляем дополнительную проверку через setTimeout
     setTimeout(scrollToBottom, 300);
   });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("message", handleMessage);
 });
 
 watch(
@@ -254,7 +247,6 @@ watch(
     chatStore.isLoading = false;
     nextTick(() => {
       scrollToBottom();
-      // Дополнительная проверка для асинхронно загружаемых медиа
       setTimeout(scrollToBottom, 500);
     });
   },
