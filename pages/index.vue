@@ -9,13 +9,16 @@ const contextMenuPosition = ref({ x: 0, y: 0 });
 const selectedMessage = ref(null);
 const contextMenuWidth = 160;
 const contextMenuHeight = 120;
-const iframeData = ref(null);
+const iframeData = ref({});
 
 const handleMessage = (event) => {
   const ALLOWED_ORIGINS = [
     "https://saluence.net",
     "http://localhost:3000"
   ];
+
+  console.log("IFRAME", event.origin);
+  console.log(event);
 
   if (!ALLOWED_ORIGINS.includes(event.origin)) {
     return;
