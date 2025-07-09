@@ -235,6 +235,7 @@ const auth = async () => {
 
     data = event.data;
     console.log('Получены данные:', data)
+    event.source.postMessage({ status: 'success' }, event.origin);
 });
   } catch (err) {
     
