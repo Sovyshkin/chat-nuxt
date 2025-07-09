@@ -140,12 +140,13 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
     socket.on("logined", async (data) => {
       try {
         clients.set(data.userId1, socket.id);
-        const chats = await getChats(data.userId1)
-        const messagesResp = await getMessages(data.userId1, data.userId2, data.type)
-        socket.emit("chats", chats);
         io.emit("online", Array.from(clients.keys()));
-        
-        socket.emit("messages", messagesResp.messages);
+        const chats = await getChats(data.userId1)
+        socket.emit("chats", chats);
+        if (data.userId2 && data.type) {
+          const messagesResp = await getMessages(data.userId1, data.userId2, data.type)
+          socket.emit("messages", messagesResp.messages);
+        }
       } catch (error) {
         console.error("Login error:", error);
       }

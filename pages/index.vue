@@ -227,6 +227,8 @@ const getDataIframe = async () => {
       }
     })
     chatStore.user = response
+    await chatStore.disconnect()
+    await chatStore.connect()
   } catch (err) {
     console.log(err);
     if (err.message) {
@@ -242,10 +244,6 @@ onMounted(async () => {
     scrollToBottom();
     setTimeout(scrollToBottom, 300);
   });
-});
-
-onUnmounted(() => {
-  window.removeEventListener("message", handleMessage);
 });
 
 watch(
@@ -287,8 +285,9 @@ watch(
         </div>
       </div>
     </div>
+    <SelectChat v-if="!chatStore.chat"/>
     <transition name="fadeChatContainer">
-      <div class="chat" v-if="!chatStore.showChats">
+      <div class="chat" v-if="!chatStore.showChats && chatStore.chat">
         <div
           class="messages"
           v-if="!chatStore?.empty && !chatStore?.isLoading"
