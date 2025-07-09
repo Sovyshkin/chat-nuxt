@@ -230,10 +230,10 @@ const auth = async () => {
   try {
     window.addEventListener("message", (event) => {
       event.source.postMessage({ status: "success" }, event.origin);
+      data = event.data;
       // Проверяем origin отправителя для безопасности
       if (event.origin !== "http://localhost:3000") return;
 
-      data = event.data;
       console.log("Получены данные:", data);
     });
   } catch (err) {}
