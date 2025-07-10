@@ -285,9 +285,9 @@ watch(
         </div>
       </div>
     </div>
-    <SelectChat v-if="!chatStore.chat"/>
+    <SelectChat v-if="!chatStore.selectedChat"/>
     <transition name="fadeChatContainer">
-      <div class="chat" v-if="!chatStore.showChats && chatStore.chat">
+      <div class="chat" v-if="!chatStore.showChats && chatStore.selectedChat">
         <div
           class="messages"
           v-if="!chatStore?.empty && !chatStore?.isLoading"

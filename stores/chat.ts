@@ -134,7 +134,7 @@ export const useChatStore = defineStore(
       if (process.client) {
         userID.value = user.value._id;
 
-        socket.value = io("https://saluence.net", { // https://saluence.net http://localhost:3000
+        socket.value = io("http://localhost:3001", { // https://saluence.net http://localhost:3000
           path: "/socket.io/",
           transports: ["websocket"],
         });
