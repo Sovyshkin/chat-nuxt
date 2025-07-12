@@ -8,7 +8,6 @@ import { User } from "~/server/models/user.model";
 import mongoose from "mongoose";
 import { randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
 
-// Проверка наличия ключа шифрования
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY) {
   throw new Error("ENCRYPTION_KEY is not defined in environment variables");
@@ -48,7 +47,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
     };
   };
 
-  // Дешифровка сообщения
   const decryptMessage = (
     encryptedText: string,
     iv: string,
@@ -60,7 +58,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       Buffer.from(iv, "base64")
     );
 
-    // Устанавливаем тег аутентификации перед дешифровкой
     decipher.setAuthTag(Buffer.from(authTag, "base64"));
 
     let decrypted = decipher.update(encryptedText, "base64", "utf8");
@@ -69,7 +66,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
     return decrypted;
   };
 
-  // Получение сообщений с дешифровкой
   const getMessages = async (userId1, userId2, type) => {
     try {
       let response = await $fetch("/api/chat/messages", {
@@ -82,17 +78,12 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       });
 
       console.log(userId1, userId2, type);
-      console.log(response);
-      
-      
-
       return response;
     } catch (err) {
       console.log(err);
     }
   };
 
-  // Получение списка чатов
   const getChats = async (userId: string) => {
     try {
       const userObjectId = new mongoose.Types.ObjectId(userId);
@@ -128,7 +119,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
     }
   };
 
-  // Получение информации о чате
   const getChat = async (id: string) => {
     return await Chat.findOne({ _id: id });
   };
@@ -136,7 +126,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
   io.bind(engine);
 
   io.on("connection", async (socket) => {
-    // Обработка входа пользователя
     socket.on("logined", async (data) => {
       try {
         clients.set(data.userId1, socket.id);
@@ -152,12 +141,9 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       }
     });
 
-    // Обработка нового сообщения
     socket.on("new message", async (data) => {
       try {
         const { encrypted, iv, authTag } = encryptMessage(data.text);
-
-        console.log(encrypted, iv, authTag);
 
         const message = new Message({
           text: encrypted,
@@ -171,7 +157,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
         });
 
         await message.save();
-        console.log("Сообщение добавлено", message.text);
 
         const { chat, messages } = await getMessages(
           data.userId1,
@@ -192,22 +177,22 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       }
     });
 
-    // Обработка удаления сообщения
     socket.on("delete message", async (data) => {
       try {
         await Message.deleteOne({ _id: data.messageId });
-        const messages = await getMessages(
+        let resp = await getMessages(
           data.userId1,
           data.userId2,
           data.type
         );
-
+      
+        socket.emit("messages", resp.messages)
         const chat = await getChat(data.chatId);
         if (chat) {
           chat.members.forEach((client) => {
             const clientSocketId = clients.get(client.userId.toString());
             if (clientSocketId) {
-              socket.to(clientSocketId).emit("messages", messages);
+              socket.to(clientSocketId).emit("messages", resp.messages);
             }
           });
         }
@@ -216,7 +201,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       }
     });
 
-    // Создание группового чата
     socket.on("create group", async (data) => {
       try {
         const members = data.members.map((userId) => ({
@@ -233,7 +217,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
 
         await group.save();
 
-        // Обновляем список чатов для всех участников
         await Promise.all(
           data.members.map(async (id) => {
             const clientSocketId = clients.get(id);
@@ -248,7 +231,6 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       }
     });
 
-    // Обработка отключения
     socket.on("disconnect", () => {
       for (const [userId, socketId] of clients.entries()) {
         if (socketId === socket.id) {
@@ -269,9 +251,7 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
       },
       websocket: {
         open(peer) {
-          // @ts-expect-error private method and property
           engine.prepare(peer._internal.nodeReq);
-          // @ts-expect-error private method and property
           engine.onWebSocket(
             peer._internal.nodeReq,
             peer._internal.nodeReq.socket,

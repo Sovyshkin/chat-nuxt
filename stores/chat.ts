@@ -55,9 +55,12 @@ export const useChatStore = defineStore(
             body: formData,
           });
 
-          if (socket.value) {
-            socket.value.emit("new message with files", formData);
-          }
+          messages.value = await $fetch("/api/tickets/messages", {
+            method: "POST",
+            body: {
+              ticketId: selectedTicket.value._id
+            }
+          })
         } else {
           // Обычное текстовое сообщение
           if (socket.value) {
@@ -93,6 +96,7 @@ export const useChatStore = defineStore(
             userId1: user.value._id,
             userId2: selectedChat.value._id,
             chatId: chat.value._id,
+            type: chat.value.type
           });
         }
       } catch (err) {
@@ -139,10 +143,16 @@ export const useChatStore = defineStore(
           transports: ["websocket"],
         });
 
+        let chatLocal = localStorage.getItem("chat")
+        chat.value = chatLocal ? JSON.parse(chatLocal) : {};
+
+        let selectedChatLocal = localStorage.getItem("selectedChat")
+        selectedChat.value = selectedChatLocal ? JSON.parse(selectedChatLocal) : {};
+
         socket.value.emit("logined", {
           userId1: user.value._id,
           userId2: selectedChat.value._id,
-          type: selectedChat.value.type,
+          type: chat.value.type,
         });
 
         socket.value.on("messages", (data) => {
@@ -188,6 +198,7 @@ export const useChatStore = defineStore(
 
     const openChat = async (userChat) => {
       try {
+        isLoading.value = true
         selectedChat.value = userChat;
         showChats.value = false;
         showChatsPred.value = false;
@@ -200,7 +211,12 @@ export const useChatStore = defineStore(
           },
         });
         chat.value = response.chat;
+        localStorage.setItem("chat", JSON.stringify(chat.value))
+        localStorage.setItem("selectedChat", JSON.stringify(selectedChat.value))
         messages.value = response.messages;
+        if (messages.value) {
+          empty.value = false
+        }
         clients.value = clients.value.map((client) => {
           if (client._id === selectedChat.value._id) {
             return { ...client, notification: false }; // Создаём новый объект
@@ -209,6 +225,8 @@ export const useChatStore = defineStore(
         });
       } catch (err) {
         console.log(err);
+      } finally {
+          isLoading.value = false;
       }
     };
 

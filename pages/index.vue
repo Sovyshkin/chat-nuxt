@@ -13,10 +13,6 @@ const iframeData = ref({});
 
 const handleMessage = (event) => {
   const ALLOWED_ORIGINS = ["https://saluence.net", "http://localhost:3000"];
-
-  console.log("IFRAME", event.origin);
-  console.log(event);
-
   if (!ALLOWED_ORIGINS.includes(event.origin)) {
     return;
   }
@@ -223,23 +219,32 @@ const getDataIframe = async () => {
     let response = await $fetch("/api/users/create", {
       method: "POST",
       body: {
-        ...iframeData.value
-      }
-    })
-    chatStore.user = response
-    await chatStore.disconnect()
-    await chatStore.connect()
+        ...iframeData.value,
+      },
+    });
+    chatStore.user = response;
+    await chatStore.disconnect();
+    await chatStore.connect();
   } catch (err) {
     console.log(err);
     if (err.message) {
-      alert(err.message)
+      alert(err.message);
     }
   }
+};
+
+const adjustTextareaHeight = (el) => {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 };
 
 onMounted(async () => {
   await getDataIframe();
   document.addEventListener("click", hideContextMenu);
+  const textarea = document.querySelector('.group-item');
+  if (textarea) {
+    textarea.addEventListener('input', () => adjustTextareaHeight(textarea));
+  }
   nextTick(() => {
     scrollToBottom();
     setTimeout(scrollToBottom, 300);
@@ -285,7 +290,7 @@ watch(
         </div>
       </div>
     </div>
-    <SelectChat v-if="!chatStore.selectedChat"/>
+    <SelectChat v-if="!chatStore.selectedChat" />
     <transition name="fadeChatContainer">
       <div class="chat" v-if="!chatStore.showChats && chatStore.selectedChat">
         <div
@@ -308,7 +313,6 @@ watch(
                 userGroupMessage: message.senderId == chatStore.userID,
               }"
             >
-              <!-- Блок с ответом на сообщение (если есть replyTo) -->
               <div
                 class="reply-preview"
                 v-if="message.replyTo"
@@ -324,7 +328,6 @@ watch(
                   {{ message.replyTo.text }}
                 </div>
               </div>
-              <!-- Блок с медиафайлами -->
               <div
                 class="media-container"
                 v-if="message.media && message.media.length"
@@ -335,7 +338,6 @@ watch(
                   class="media-item"
                   :class="{ userMedia: message.senderId == chatStore.userID }"
                 >
-                  <!-- Фото -->
                   <div v-if="mediaType(media) === 'image'" class="media-photo">
                     <img
                       :src="media.url"
@@ -346,8 +348,6 @@ watch(
                       {{ media.caption }}
                     </div>
                   </div>
-
-                  <!-- Видео -->
                   <div v-if="mediaType(media) === 'video'" class="media-video">
                     <video controls :poster="media.thumbnail">
                       <source
@@ -364,8 +364,6 @@ watch(
                       </div>
                     </div>
                   </div>
-
-                  <!-- Аудио -->
                   <div v-if="mediaType(media) === 'audio'" class="media-audio">
                     <audio controls>
                       <source
@@ -378,8 +376,6 @@ watch(
                       <span>{{ formatFileSize(media.size) }}</span>
                     </div>
                   </div>
-
-                  <!-- Голосовое сообщение -->
                   <div v-if="mediaType(media) === 'voice'" class="media-voice">
                     <div class="voice-wave">
                       <div class="wave"></div>
@@ -393,8 +389,6 @@ watch(
                       formatDuration(media.duration)
                     }}</span>
                   </div>
-
-                  <!-- Документ -->
                   <div
                     v-if="mediaType(media) === 'document'"
                     class="media-document"
@@ -438,7 +432,6 @@ watch(
               </div>
             </div>
           </div>
-          <!-- Контекстное меню -->
           <div
             v-if="contextMenuVisible"
             class="context-menu"
@@ -487,7 +480,6 @@ watch(
         <AppEmpty v-if="chatStore.empty" />
         <ChatLoader class="left" v-if="chatStore.chatLoader" />
         <div class="group-send">
-          <!-- Блок с превью выбранных файлов -->
           <transition-group name="slide-down" tag="div" class="files-preview">
             <div
               v-for="(file, index) in chatStore.files"
@@ -509,7 +501,6 @@ watch(
             </div>
           </transition-group>
 
-          <!-- Блок с информацией о сообщении, на которое отвечаем -->
           <transition name="slide-down">
             <div class="reply-preview" v-if="chatStore.replyId">
               <div class="reply-info">
@@ -525,7 +516,6 @@ watch(
             <button @click="openFilePicker" class="attach-button">
               <img src="../assets/attach.png" alt="Прикрепить файл" />
             </button>
-            <!-- Скрытый input для выбора файлов -->
             <input
               type="file"
               ref="fileInput"
@@ -533,13 +523,16 @@ watch(
               multiple
               style="display: none"
             />
-            <input
-              type="text"
+            <textarea
               class="group-item"
               v-model="chatStore.content"
-              @keydown.enter="handleEnter"
+              @keydown.enter.exact.prevent="handleEnter"
+              @keydown.enter.shift.exact.prevent="chatStore.content += '\n'"
+              autocomplete="off"
               placeholder="Start writing..."
-            />
+              rows="1"
+              style="resize: none"
+            ></textarea>
             <img
               class="send"
               src="../assets/send.svg"
@@ -654,6 +647,7 @@ label {
 }
 
 .message {
+  white-space: pre-wrap;
   max-width: 600px;
   width: fit-content;
   background-color: #e6eefe;
@@ -666,10 +660,14 @@ label {
 }
 
 .group-item {
-  line-height: 22px;
-  font-size: 14px;
+  white-space: pre-wrap;
+  overflow-y: hidden;
+  min-height: 44px;
+  max-height: 200px;
+  line-height: 1.5;
+  padding: 10px;
   width: 100%;
-  outline: none;
+  outline: none !important;
 }
 
 .wrap-send {
@@ -697,11 +695,11 @@ label {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  overflow: hidden; /* Обрезает изображение, если оно выходит за пределы блока */
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0; /* Фон на случай, если изображение не загрузится */
+  background-color: #f0f0f0;
   box-sizing: border-box;
 }
 
@@ -710,9 +708,9 @@ label {
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
-  display: block; /* Убирает лишние пробелы */
-  border: none; /* Убирает возможные границы */
-  padding: 0; /* Убирает возможные отступы */
+  display: block;
+  border: none;
+  padding: 0;
   margin: 0;
 }
 
@@ -761,7 +759,6 @@ label {
   transform: none;
 }
 
-/* Добавляем стили для контекстного меню */
 .context-menu {
   position: fixed;
   background-color: white;
@@ -857,7 +854,6 @@ label {
   transition: background-color 0.3s;
 }
 
-/* Стили для блока ответа */
 .reply-preview {
   width: 100%;
   padding: 8px 12px;
@@ -898,7 +894,6 @@ label {
   color: #ff3b30;
 }
 
-/* Дополнительные стили для плавности */
 .reply-preview {
   width: 100%;
   padding: 8px 12px;
@@ -982,7 +977,6 @@ label {
   position: absolute;
 }
 
-/* Обновленные стили для чата */
 .chat {
   width: 100%;
   height: 100vh;
@@ -992,12 +986,11 @@ label {
   position: relative;
 }
 
-/* Фиксируем высоту блока сообщений с возможностью прокрутки */
 .messages {
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  height: calc(100vh - 150px); /* Оставляем место для инпута */
+  height: calc(100vh - 150px);
   background-color: #f8f9fc;
   padding: 20px;
   border-radius: 20px 20px 0 0;
@@ -1009,7 +1002,6 @@ label {
   flex-grow: 1;
 }
 
-/* Фиксируем блок отправки внизу */
 .group-send {
   position: sticky;
   bottom: 0;
@@ -1023,7 +1015,6 @@ label {
   flex-direction: column;
 }
 
-/* Анимации без изменения layout */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.3s ease;
@@ -1040,20 +1031,16 @@ label {
   padding-bottom: 0;
 }
 
-/* Плавное появление файлов */
 .files-preview {
   max-height: 200px;
   overflow-y: auto;
   transition: max-height 0.3s ease;
 }
-
-/* Инпут теперь не прыгает */
 .wrap-send {
   transition: padding-top 0.2s ease;
   position: relative;
 }
 
-/* Улучшенные стили для превью файлов */
 .file-item {
   background: #f8f9fc;
   border-radius: 8px;
@@ -1061,7 +1048,6 @@ label {
   transition: all 0.2s ease;
 }
 
-/* Стили для медиафайлов */
 .media-container {
   width: 100%;
   margin-bottom: 8px;
@@ -1261,7 +1247,6 @@ label {
   height: 20px;
 }
 
-/* Адаптивные стили */
 @media (max-width: 768px) {
   .media-photo,
   .media-video {
@@ -1277,7 +1262,6 @@ label {
     max-width: 80%;
   }
 }
-/* Добавляем стили для полноэкранного просмотра */
 .fullscreen-image-overlay {
   position: fixed;
   top: 0;
@@ -1324,12 +1308,10 @@ label {
   height: 40px;
 }
 
-/* Улучшаем стили для прокрутки */
 .messages {
   scroll-behavior: smooth;
 }
 
-/* Плавная анимация для чатов */
 .fadeChats-enter-active,
 .fadeChats-leave-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1345,7 +1327,6 @@ label {
   opacity: 0;
 }
 
-/* Плавная анимация для чатов */
 .fadeChatContainer-enter-active,
 .fadeChatContainer-leave-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

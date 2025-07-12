@@ -67,12 +67,13 @@ export default defineEventHandler(async (event) => {
     const { userId1, userId2, type } = await readBody(event);
 
     let chat = null;
+    console.log( userId1, userId2, type);
+    
     
     if (type === "private") {
       const user1Id = new mongoose.Types.ObjectId(userId1);
       const user2Id = new mongoose.Types.ObjectId(userId2);
 
-      // Ищем чат где оба пользователя являются участниками (ровно 2 участника)
       chat = await Chat.findOne({
         type: "private",
         members: {
@@ -83,8 +84,7 @@ export default defineEventHandler(async (event) => {
           ]
         }
       });
-
-      // Если чат не найден - создаем новый
+  
       if (!chat) {
         chat = await Chat.create({
           type: "private",
@@ -107,11 +107,11 @@ export default defineEventHandler(async (event) => {
       throw new Error("Invalid chat type");
     }
 
-    // Получаем и дешифруем сообщения
     const encryptedMessages = await Message.find({ chatId: chat._id })
       .populate("replyTo")
       .sort({ createdAt: 1 })
       .lean();
+
 
     const messages = encryptedMessages.map(decryptMessage);
     

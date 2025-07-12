@@ -14,20 +14,13 @@ export default defineEventHandler(async (event) => {
     }
 
     let user = await User.findOne({ userId });
-    
-    console.log(user);
-    
 
     if (!user) {
-      console.log("Пользователя не было");
       user = new User({ name, userId, avatar });
-      console.log(user);
       await user.save();
     } else {
-      console.log("Пользователь был")
       user.name = name;
       user.avatar = avatar;
-      console.log(user);
       
       await user.save();
     }
