@@ -228,7 +228,7 @@ const getDataIframe = async () => {
   } catch (err) {
     console.log(err);
     if (err.message) {
-      alert(err.message);
+      // alert(err.message);
     }
   }
 };
@@ -249,6 +249,7 @@ onMounted(async () => {
     scrollToBottom();
     setTimeout(scrollToBottom, 300);
   });
+  chatStore.chatLoader = true
 });
 
 watch(
@@ -290,9 +291,12 @@ watch(
         </div>
       </div>
     </div>
-    <SelectChat v-if="!chatStore.selectedChat" />
+    <SelectChat v-if="!chatStore.selectedChat && !chatStore.isLoading" />
+    <div class="loader" v-if="chatStore.isLoading">
+      <AppLoader />
+    </div>
     <transition name="fadeChatContainer">
-      <div class="chat" v-if="!chatStore.showChats && chatStore.selectedChat">
+      <div class="chat" v-if="!chatStore.showChats && chatStore.selectedChat && !chatStore.isLoading">
         <div
           class="messages"
           v-if="!chatStore?.empty && !chatStore?.isLoading"
@@ -478,8 +482,7 @@ watch(
           </div>
         </div>
         <AppEmpty v-if="chatStore.empty" />
-        <ChatLoader class="left" v-if="chatStore.chatLoader" />
-        <div class="group-send">
+        <div class="group-send" >
           <transition-group name="slide-down" tag="div" class="files-preview">
             <div
               v-for="(file, index) in chatStore.files"
@@ -512,7 +515,7 @@ watch(
               </div>
             </div>
           </transition>
-          <div class="wrap-send">
+          <div class="wrap-send" v-if="!chatStore.showChats && chatStore.selectedChat && !chatStore.isLoading">
             <button @click="openFilePicker" class="attach-button">
               <img src="../assets/attach.png" alt="Прикрепить файл" />
             </button>
@@ -538,10 +541,10 @@ watch(
               src="../assets/send.svg"
               @click="chatStore.addMessage"
               alt=""
-              v-if="!chatStore.isLoading"
+              v-if="!chatStore.chatLoader"
             />
+            <ChatLoader v-if="chatStore.chatLoader" />
           </div>
-          <AppLoader v-if="chatStore.isLoading" />
         </div>
       </div>
     </transition>
@@ -1340,5 +1343,13 @@ label {
 .fadeChatContainer-leave-to {
   transform: translateX(-100%);
   opacity: 0;
+}
+
+.loader {
+  height: 90vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

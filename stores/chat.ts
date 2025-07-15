@@ -88,7 +88,6 @@ export const useChatStore = defineStore(
 
     const deleteMessage = async (messageId) => {
       try {
-        chatLoader.value = true;
         userID.value = user.value._id;
         if (socket.value) {
           socket.value.emit("delete message", {
@@ -101,8 +100,6 @@ export const useChatStore = defineStore(
         }
       } catch (err) {
         console.log(err);
-      } finally {
-        chatLoader.value = false;
       }
     };
 
@@ -138,7 +135,7 @@ export const useChatStore = defineStore(
       if (process.client) {
         userID.value = user.value._id;
 
-        socket.value = io("https://saluence.net", { // https://saluence.net http://localhost:3000
+        socket.value = io("http://localhost:3000", { // https://saluence.net http://localhost:3000
           path: "/socket.io/",
           transports: ["websocket"],
         });
@@ -219,7 +216,7 @@ export const useChatStore = defineStore(
         }
         clients.value = clients.value.map((client) => {
           if (client._id === selectedChat.value._id) {
-            return { ...client, notification: false }; // Создаём новый объект
+            return { ...client, notification: false };
           }
           return client;
         });
