@@ -249,7 +249,6 @@ onMounted(async () => {
     scrollToBottom();
     setTimeout(scrollToBottom, 300);
   });
-  chatStore.chatLoader = true
 });
 
 watch(
