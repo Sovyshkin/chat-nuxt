@@ -228,7 +228,7 @@ const getDataIframe = async () => {
   } catch (err) {
     console.log(err);
     if (err.message) {
-      // alert(err.message);
+      alert(err.message);
     }
   }
 };
