@@ -551,6 +551,14 @@ watch(
   </div>
 </template>
 <style scoped>
+* {
+  -ms-overflow-style: none;  /* IE и Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
 .wrapper {
   display: flex;
   position: relative;
