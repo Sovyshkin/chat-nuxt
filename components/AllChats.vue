@@ -214,6 +214,7 @@ h1 {
   padding: 20px;
   width: 100%;
   max-width: 400px;
+  min-width: 350px;
   background: white;
   border-radius: 12px;
 }

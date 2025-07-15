@@ -217,15 +217,16 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
 
         await group.save();
 
-        await Promise.all(
-          data.members.map(async (id) => {
-            const clientSocketId = clients.get(id);
-            if (clientSocketId) {
-              const chats = await getChats(id);
-              socket.to(clientSocketId).emit("chats", chats);
-            }
-          })
-        );
+        let chatsUser = await getChats(data.creatorId)
+        socket.emit('chats', chatsUser)
+
+        data.members.forEach(async (id) => {
+          const clientSocketId = clients.get(id);
+          if (clientSocketId) {
+            const chats = await getChats(id);
+            socket.to(clientSocketId).emit("chats", chats);
+          }
+        });
       } catch (error) {
         console.error("Create group error:", error);
       }
