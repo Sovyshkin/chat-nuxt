@@ -217,6 +217,8 @@ export default defineNitroPlugin(async (nitroApp: NitroApp) => {
 
         await group.save();
 
+        console.log(group);
+
         let chatsUser = await getChats(data.creatorId)
         socket.emit('chats', chatsUser)
 
