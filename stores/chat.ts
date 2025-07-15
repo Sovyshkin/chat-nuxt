@@ -140,12 +140,15 @@ export const useChatStore = defineStore(
           transports: ["websocket"],
         });
 
+        
         let chatLocal = localStorage.getItem("chat")
         chat.value = chatLocal ? JSON.parse(chatLocal) : {};
-
+        
         let selectedChatLocal = localStorage.getItem("selectedChat")
         selectedChat.value = selectedChatLocal ? JSON.parse(selectedChatLocal) : {};
-
+        
+        content.value = sessionStorage.getItem('content')
+        
         socket.value.emit("logined", {
           userId1: user.value._id,
           userId2: selectedChat.value._id,
@@ -247,7 +250,16 @@ export const useChatStore = defineStore(
       }
     };
 
-    return {
+    const saveContent = () => {
+      try {
+        sessionStorage.setItem('content', content.value);
+      } catch (err) {
+        console.log(err);
+        
+      }
+    }
+
+    return {saveContent,
       user,
       showChats,
       showChatsPred,

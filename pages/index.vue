@@ -530,6 +530,7 @@ watch(
               v-model="chatStore.content"
               @keydown.enter.exact.prevent="handleEnter"
               @keydown.enter.shift.exact.prevent="chatStore.content += '\n'"
+              @blur="chatStore.saveContent"
               autocomplete="off"
               placeholder="Start writing..."
               rows="1"
