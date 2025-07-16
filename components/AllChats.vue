@@ -4,8 +4,16 @@ import AppNotification from "@/components/AppNotification.vue";
 import Modal from "@/components/Modal.vue";
 import { useChatStore } from "@/stores/chat";
 
+const selectedElements = document.querySelectorAll('.selected');
+console.log(selectedElements);
+
+selectedElements.forEach(element => {
+  element.classList.remove('selected');
+});
+
 const chatStore = useChatStore();
-chatStore.connect();
+chatStore.connect()
+
 
 const showCreateGroupModal = ref(false);
 const newGroupName = ref("");
@@ -59,8 +67,8 @@ const goCreateGroup = async () => {
       <li
         class="chat"
         @click="chatStore.openChat(item)"
-        v-for="(item, i) in chatStore.clients"
-        :key="i"
+        v-for="item in chatStore.clients"
+        :key="item._id"
         :class="{ selected: chatStore.selectedChat._id === item._id }"
       >
         <div class="info">

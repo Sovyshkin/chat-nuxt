@@ -97,7 +97,7 @@ const getRepliedMessageText = (replyId) => {
 };
 
 const chatStore = useChatStore();
-chatStore.connect();
+// chatStore.connect();
 
 const messagesContainer = ref(null);
 

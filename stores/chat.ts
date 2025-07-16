@@ -142,13 +142,15 @@ export const useChatStore = defineStore(
 
         
         let chatLocal = localStorage.getItem("chat")
-        chat.value = chatLocal ? JSON.parse(chatLocal) : {};
+        chat.value = chatLocal ? JSON.parse(chatLocal) : ref({});
         
         let selectedChatLocal = localStorage.getItem("selectedChat")
-        selectedChat.value = selectedChatLocal ? JSON.parse(selectedChatLocal) : {};
-        
-        content.value = sessionStorage.getItem('content')
-        
+        selectedChat.value = selectedChatLocal ? JSON.parse(selectedChatLocal) : ref({});
+        let contentSession = sessionStorage.getItem('content')
+        if (contentSession != 'null') {
+          content.value = contentSession
+        }
+
         socket.value.emit("logined", {
           userId1: user.value._id,
           userId2: selectedChat.value._id,
@@ -252,7 +254,9 @@ export const useChatStore = defineStore(
 
     const saveContent = () => {
       try {
-        sessionStorage.setItem('content', content.value);
+        if (content.value) {
+          sessionStorage.setItem('content', content.value);
+        }
       } catch (err) {
         console.log(err);
         
