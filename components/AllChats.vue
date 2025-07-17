@@ -4,16 +4,7 @@ import AppNotification from "@/components/AppNotification.vue";
 import Modal from "@/components/Modal.vue";
 import { useChatStore } from "@/stores/chat";
 
-const selectedElements = document.querySelectorAll('.selected');
-console.log(selectedElements);
-
-selectedElements.forEach(element => {
-  element.classList.remove('selected');
-});
-
 const chatStore = useChatStore();
-chatStore.connect()
-
 
 const showCreateGroupModal = ref(false);
 const newGroupName = ref("");
@@ -48,6 +39,16 @@ const goCreateGroup = async () => {
     console.log(err);
   }
 };
+
+onMounted(() => {
+  const selectedElements = document.querySelectorAll(".selected");
+  console.log(selectedElements);
+
+  selectedElements.forEach((element) => {
+    element.classList.remove("selected");
+  });
+  chatStore.connect();
+});
 </script>
 
 <template>
@@ -123,7 +124,7 @@ const goCreateGroup = async () => {
           @click="createGroup"
           :disabled="!newGroupName.trim() || selectedUsers.length === 0"
         >
-        Create a group
+          Create a group
         </button>
       </div>
     </Modal>
