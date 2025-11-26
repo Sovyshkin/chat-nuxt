@@ -14,7 +14,7 @@ export const useChatStore = defineStore(
     const messages = ref([]);
     const chats = ref([]);
     const clients = ref([]);
-    const selectedChat = ref("");
+    const selectedChat = ref(null);
     const chat = ref(null);
     let online = [];
     const notification = ref(false);
@@ -24,6 +24,7 @@ export const useChatStore = defineStore(
     const showChats = ref(false);
     const showChatsPred = ref(true);
     const user = ref({})
+    const isLoadingChats = ref(true);
 
     const addMessage = async () => {
       try {
@@ -141,22 +142,6 @@ export const useChatStore = defineStore(
         });
 
         
-        let chatLocal = localStorage.getItem("chat")
-        chat.value = chatLocal ? JSON.parse(chatLocal) : ref({});
-        
-        let selectedChatLocal = localStorage.getItem("selectedChat")
-        selectedChat.value = selectedChatLocal ? JSON.parse(selectedChatLocal) : ref({});
-        let contentSession = sessionStorage.getItem('content')
-        if (contentSession != 'null') {
-          content.value = contentSession
-        }
-
-        socket.value.emit("logined", {
-          userId1: user.value._id,
-          userId2: selectedChat.value._id,
-          type: chat.value.type,
-        });
-
         socket.value.on("messages", (data) => {
           messages.value = data;
           if (data) {
@@ -166,6 +151,7 @@ export const useChatStore = defineStore(
 
         socket.value.on("chats", (data) => {
           clients.value = data || [];
+          isLoadingChats.value = false;
         });
         socket.value.on("online", (data) => {
           online = data || [];
@@ -200,6 +186,7 @@ export const useChatStore = defineStore(
 
     const openChat = async (userChat) => {
       try {
+        if (selectedChat.value && selectedChat.value._id === userChat._id) return;
         isLoading.value = true
         selectedChat.value = userChat;
         showChats.value = false;
@@ -290,6 +277,7 @@ export const useChatStore = defineStore(
       userID,
       notification,
       openAllChats,
+      isLoadingChats,
     };
   },
   { persist: true }

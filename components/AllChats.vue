@@ -64,13 +64,14 @@ onMounted(() => {
       />
     </header>
 
-    <ul class="chats">
+    <ChatLoader v-if="chatStore.isLoadingChats" />
+    <ul class="chats" v-else>
       <li
         class="chat"
         @click="chatStore.openChat(item)"
         v-for="item in chatStore.clients"
         :key="item._id"
-        :class="{ selected: chatStore.selectedChat._id === item._id }"
+        :class="{ selected: chatStore.selectedChat && chatStore.selectedChat._id === item._id }"
       >
         <div class="info">
           <img :src="item.avatar" alt="" />

@@ -18,7 +18,7 @@ export default defineNuxtConfig({
           'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           'X-Frame-Options': '',
-          'Content-Security-Policy': "frame-ancestors http: https: *"
+          'Content-Security-Policy': "frame-ancestors http:"
         }
       }
     }
@@ -27,7 +27,7 @@ export default defineNuxtConfig({
     headers: {
       xFrameOptions: false,
       contentSecurityPolicy: {
-        'frame-ancestors': ["'self'", "*"],
+        'frame-ancestors': ["http:"],
       }
     }
   },
