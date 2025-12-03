@@ -23,7 +23,7 @@ export const useChatStore = defineStore(
     const files = ref([]);
     const showChats = ref(false);
     const showChatsPred = ref(true);
-    const user = ref({})
+    const user = ref({});
     const isLoadingChats = ref(true);
 
     const addMessage = async () => {
@@ -59,9 +59,9 @@ export const useChatStore = defineStore(
           messages.value = await $fetch("/api/tickets/messages", {
             method: "POST",
             body: {
-              ticketId: selectedTicket.value._id
-            }
-          })
+              ticketId: selectedTicket.value._id,
+            },
+          });
         } else {
           // Обычное текстовое сообщение
           if (socket.value) {
@@ -96,7 +96,7 @@ export const useChatStore = defineStore(
             userId1: user.value._id,
             userId2: selectedChat.value._id,
             chatId: chat.value._id,
-            type: chat.value.type
+            type: chat.value.type,
           });
         }
       } catch (err) {
@@ -136,12 +136,30 @@ export const useChatStore = defineStore(
       if (process.client) {
         userID.value = user.value._id;
 
-        socket.value = io("https://saluence.net", { // https://saluence.net http://localhost:3000
+        socket.value = io("https://saluence.net", {
+          // https://saluence.net http://localhost:3000
           path: "/socket.io/",
           transports: ["websocket"],
         });
 
-        
+        let chatLocal = localStorage.getItem("chat");
+        chat.value = chatLocal ? JSON.parse(chatLocal) : ref({});
+
+        let selectedChatLocal = localStorage.getItem("selectedChat");
+        selectedChat.value = selectedChatLocal
+          ? JSON.parse(selectedChatLocal)
+          : ref({});
+        let contentSession = sessionStorage.getItem("content");
+        if (contentSession != "null") {
+          content.value = contentSession;
+        }
+
+        socket.value.emit("logined", {
+          userId1: user.value._id,
+          userId2: selectedChat.value._id,
+          type: chat.value.type,
+        });
+
         socket.value.on("messages", (data) => {
           messages.value = data;
           if (data) {
@@ -186,8 +204,9 @@ export const useChatStore = defineStore(
 
     const openChat = async (userChat) => {
       try {
-        if (selectedChat.value && selectedChat.value._id === userChat._id) return;
-        isLoading.value = true
+        if (selectedChat.value && selectedChat.value._id === userChat._id)
+          return;
+        isLoading.value = true;
         selectedChat.value = userChat;
         showChats.value = false;
         showChatsPred.value = false;
@@ -200,11 +219,14 @@ export const useChatStore = defineStore(
           },
         });
         chat.value = response.chat;
-        localStorage.setItem("chat", JSON.stringify(chat.value))
-        localStorage.setItem("selectedChat", JSON.stringify(selectedChat.value))
+        localStorage.setItem("chat", JSON.stringify(chat.value));
+        localStorage.setItem(
+          "selectedChat",
+          JSON.stringify(selectedChat.value)
+        );
         messages.value = response.messages;
         if (messages.value) {
-          empty.value = false
+          empty.value = false;
         }
         clients.value = clients.value.map((client) => {
           if (client._id === selectedChat.value._id) {
@@ -215,7 +237,7 @@ export const useChatStore = defineStore(
       } catch (err) {
         console.log(err);
       } finally {
-          isLoading.value = false;
+        isLoading.value = false;
       }
     };
 
@@ -242,15 +264,15 @@ export const useChatStore = defineStore(
     const saveContent = () => {
       try {
         if (content.value) {
-          sessionStorage.setItem('content', content.value);
+          sessionStorage.setItem("content", content.value);
         }
       } catch (err) {
         console.log(err);
-        
       }
-    }
+    };
 
-    return {saveContent,
+    return {
+      saveContent,
       user,
       showChats,
       showChatsPred,
