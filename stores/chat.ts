@@ -94,6 +94,16 @@ export const useChatStore = defineStore(
         content.value = "";
         replyId.value = null;
         files.value = [];
+        
+        // Сбрасываем высоту textarea
+        if (process.client) {
+          nextTick(() => {
+            const textarea = document.querySelector('.group-item');
+            if (textarea) {
+              textarea.style.height = '44px';
+            }
+          });
+        }
       } catch (err) {
         console.error("Ошибка при отправке сообщения:", err);
       } finally {

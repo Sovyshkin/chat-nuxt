@@ -101,10 +101,11 @@ const chatStore = useChatStore();
 
 const messagesContainer = ref(null);
 
-const handleEnter = (event) => {
+const handleEnter = async (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
-    chatStore.addMessage();
+    await chatStore.addMessage();
+    resetTextareaHeight();
   }
 };
 
@@ -242,6 +243,12 @@ const adjustTextareaHeight = (el) => {
   const maxHeight = 200;
   el.style.height = Math.min(scrollHeight, maxHeight) + 'px';
   el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+};
+
+const resetTextareaHeight = () => {
+  if (messageTextarea.value) {
+    messageTextarea.value.style.height = '44px';
+  }
 };
 
 onMounted(async () => {
