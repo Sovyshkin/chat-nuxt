@@ -25,8 +25,10 @@ export default defineEventHandler(async (event) => {
     for (const part of formData) {
       if (part.name) {
         if (part.filename) {
-          // Генерируем уникальное имя файла
+          // Генерируем уникальное имя файла для хранения
           const uniqueFilename = `${Date.now()}-${part.filename}`;
+          // Сохраняем оригинальное имя для отображения
+          const originalFilename = part.filename;
           const filePath = path.join(publicUploadDir, uniqueFilename);
           
           // Сохраняем файл
@@ -35,7 +37,7 @@ export default defineEventHandler(async (event) => {
           // Добавляем информацию о файле
           files.push({
             name: part.name,
-            filename: part.filename,
+            filename: originalFilename, // Используем оригинальное имя
             type: part.type,
             path: filePath,
             publicUrl: `/uploads/${uniqueFilename}`, // URL для доступа из браузера

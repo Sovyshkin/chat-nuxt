@@ -25,9 +25,18 @@ export const useChatStore = defineStore(
     const showChatsPred = ref(true);
     const user = ref({});
     const isLoadingChats = ref(true);
+    const isLoadingMessages = ref(false);
 
     const addMessage = async () => {
       try {
+        // Обрезаем пробелы и переносы строк в начале и конце
+        const trimmedContent = content.value.trim();
+        
+        // Если нет текста и файлов, не отправляем сообщение
+        if (!trimmedContent && (!files.value || files.value.length === 0)) {
+          return;
+        }
+        
         chatLoader.value = true;
         userID.value = user.value._id;
         console.log(files.value);
@@ -42,7 +51,7 @@ export const useChatStore = defineStore(
           });
 
           // Добавляем метаданные сообщения
-          formData.append("text", content.value);
+          formData.append("text", trimmedContent);
           formData.append("senderId", userID.value);
           formData.append("senderName", user.value.name);
           formData.append("chatId", chat.value._id);
@@ -56,17 +65,22 @@ export const useChatStore = defineStore(
             body: formData,
           });
 
-          messages.value = await $fetch("/api/tickets/messages", {
+          // Получаем обновленные сообщения для текущего чата
+          const updatedMessages = await $fetch("/api/chat/messages", {
             method: "POST",
             body: {
-              ticketId: selectedTicket.value._id,
+              userId1: user.value._id,
+              userId2: selectedChat.value._id,
+              type: chat.value.type,
             },
           });
+          
+          messages.value = updatedMessages.messages;
         } else {
           // Обычное текстовое сообщение
           if (socket.value) {
             socket.value.emit("new message", {
-              text: content.value,
+              text: trimmedContent,
               senderId: userID.value,
               senderName: user.value.name,
               chatId: chat.value._id,
@@ -165,6 +179,7 @@ export const useChatStore = defineStore(
           if (data) {
             empty.value = false;
           }
+          isLoadingMessages.value = false;
         });
 
         socket.value.on("chats", (data) => {
@@ -207,6 +222,7 @@ export const useChatStore = defineStore(
         if (selectedChat.value && selectedChat.value._id === userChat._id)
           return;
         isLoading.value = true;
+        isLoadingMessages.value = true;
         selectedChat.value = userChat;
         showChats.value = false;
         showChatsPred.value = false;
@@ -300,6 +316,7 @@ export const useChatStore = defineStore(
       notification,
       openAllChats,
       isLoadingChats,
+      isLoadingMessages,
     };
   },
   { persist: true }

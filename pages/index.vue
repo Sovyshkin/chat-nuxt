@@ -233,19 +233,24 @@ const getDataIframe = async () => {
   }
 };
 
+const messageTextarea = ref(null);
+
 const adjustTextareaHeight = (el) => {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
+  if (!el) return;
+  el.style.height = '44px';
+  const scrollHeight = el.scrollHeight;
+  const maxHeight = 200;
+  el.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+  el.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
 };
 
 onMounted(async () => {
   await getDataIframe();
   document.addEventListener("click", hideContextMenu);
-  const textarea = document.querySelector('.group-item');
-  if (textarea) {
-    textarea.addEventListener('input', () => adjustTextareaHeight(textarea));
-  }
   nextTick(() => {
+    if (messageTextarea.value) {
+      adjustTextareaHeight(messageTextarea.value);
+    }
     scrollToBottom();
     setTimeout(scrollToBottom, 300);
   });
@@ -296,9 +301,12 @@ watch(
     </div>
     <transition name="fadeChatContainer">
       <div class="chat" v-if="!chatStore.showChats && chatStore.selectedChat && !chatStore.isLoading">
+        <div class="messages-loader" v-if="chatStore.isLoadingMessages">
+          <AppLoader />
+        </div>
         <div
           class="messages"
-          v-if="!chatStore?.empty && !chatStore?.isLoading"
+          v-else-if="!chatStore?.empty"
           ref="messagesContainer"
         >
           <div
@@ -526,15 +534,16 @@ watch(
               style="display: none"
             />
             <textarea
+              ref="messageTextarea"
               class="group-item"
               v-model="chatStore.content"
               @keydown.enter.exact.prevent="handleEnter"
-              @keydown.enter.shift.exact.prevent="chatStore.content += '\n'"
+              @keydown.enter.shift.exact.prevent="chatStore.content += '\n'; adjustTextareaHeight($event.target)"
+              @input="adjustTextareaHeight($event.target)"
               @blur="chatStore.saveContent"
               autocomplete="off"
               placeholder="Start writing..."
-              rows="1"
-              style="resize: none"
+              style="resize: none; height: 44px; overflow-y: hidden;"
             ></textarea>
             <img
               class="send"
@@ -679,6 +688,7 @@ label {
   padding: 10px;
   width: 100%;
   outline: none !important;
+  box-sizing: border-box;
 }
 
 .wrap-send {
@@ -1359,5 +1369,21 @@ label {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.messages-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 140px);
+  width: 100%;
+}
+
+.messages-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 140px);
+  width: 100%;
 }
 </style>
