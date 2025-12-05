@@ -547,7 +547,7 @@ watch(
               @keydown.enter.exact.prevent="handleEnter"
               @keydown.enter.shift.exact.prevent="chatStore.content += '\n'; adjustTextareaHeight($event.target)"
               @input="adjustTextareaHeight($event.target)"
-              @blur="chatStore.saveContent"
+
               autocomplete="off"
               placeholder="Start writing..."
               style="resize: none; height: 44px; overflow-y: hidden;"
